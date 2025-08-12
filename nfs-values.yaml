@@ -1,0 +1,32 @@
+persistence:
+  enabled: true
+  # Usar un PVC dinámico si ya tenés un StorageClass, o "local-path" en K3s
+  storageClass: local-path
+  size: 5Gi
+  accessModes:
+    - ReadWriteMany
+
+nfs:
+  export:
+    path: /export
+    accessModes:
+      - ReadWriteMany
+    squash: no_root_squash
+    clients:
+      - ip: 0.0.0.0/0
+    anonuid: 65534
+    anongid: 65534
+    # Opciones NFS (ajustar según necesidades)
+    extraOptions: async,no_subtree_check,insecure
+
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: ip-172-31-19-34
+
+replicaCount: 1  # Como no querés HA, un solo pod está bien
+
+storageClass:
+  create: true
+  name: nfs-ganesha

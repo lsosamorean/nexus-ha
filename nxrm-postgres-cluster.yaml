@@ -1,0 +1,25 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: nxrm-postgres
+  namespace: cnpg
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.6
+  storage:
+    size: 10Gi
+    storageClass: local-path
+  postgresql:
+    parameters:
+      max_connections: "350"
+      shared_buffers: "1GB"
+      work_mem: "4MB"
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  monitoring:
+    enablePodMonitor: true

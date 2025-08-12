@@ -1,0 +1,80 @@
+statefulset:
+  replicas: 3
+
+  container:
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+      requests:
+        cpu: 0.5
+        memory: 1Gi
+
+  additionalVolumeMounts:
+    - name: license-volume
+      mountPath: /var/nexus-repo-license
+
+  additionalVolumes:
+    - name: license-volume
+      secret:
+        secretName: nexus-license-secret
+
+nxrm:
+  image:
+    repository: sonatype/nexus3
+    tag: "3.79.0"
+
+  env:
+    - name: DB_NAME
+      value: "nexus"
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: nxrm-db-secret
+          key: db-password
+    - name: DB_USER
+      valueFrom:
+        secretKeyRef:
+          name: nxrm-db-secret
+          key: db-user
+    - name: DB_HOST
+      valueFrom:
+        secretKeyRef:
+          name: nxrm-db-secret
+          key: db-host
+    - name: NEXUS_SECURITY_INITIAL_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: nxrm-ha-adminsecret
+          key: nexus-admin-password
+    - name: NEXUS_SECURITY_RANDOMPASSWORD
+      value: "false"
+    - name: NEXUS_ZERO_DOWNTIME_ENABLED
+      value: "false"
+    - name: LICENSE_FILE
+      value: /var/nexus-repo-license/nexus-repo-license.lic
+    - name: INSTALL4J_ADD_VM_PARAMS
+      value: >-
+        -Xms2703m -Xmx2703m -Dnexus.licenseFile=${LICENSE_FILE}
+        -Dnexus.datastore.clustered.enabled=true
+        -Djava.util.prefs.userRoot=${NEXUS_DATA}/javaprefs
+        -Dnexus.datastore.nexus.jdbcUrl=jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
+        -Dnexus.datastore.nexus.username=${DB_USER}
+        -Dnexus.datastore.nexus.password=${DB_PASSWORD}
+
+storageClass:
+  enabled: false
+  name: nfs-client
+
+pvc:
+  volumeClaimTemplate:
+    enabled: true
+
+service:
+  nexus:
+    type: LoadBalancer
+    ports:
+      http:
+        port: 8081
+        targetPort: 8081
+        nodePort: 30081
