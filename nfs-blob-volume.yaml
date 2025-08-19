@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nexus-nfs
+  namespace: nexusrepo # Asegúrate de que el namespace sea el correcto
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-client # Usa el nombre de tu StorageClass de NFS
+  resources:
+    requests:
+      storage: 10Gi # Ajusta el tamaño según tus necesidades

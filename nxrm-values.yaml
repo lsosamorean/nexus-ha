@@ -13,11 +13,16 @@ statefulset:
   additionalVolumeMounts:
     - name: license-volume
       mountPath: /var/nexus-repo-license
+    - name: nfs-volume
+      mountPath: /nfs-blob
 
   additionalVolumes:
     - name: license-volume
       secret:
         secretName: nexus-license-secret
+    - name: nfs-volume
+      persistentVolumeClaim:
+        claimName: nexus-nfs
 
 nxrm:
   image:
